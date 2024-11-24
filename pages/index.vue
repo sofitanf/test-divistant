@@ -8,25 +8,28 @@
         </div>
     </div>
     <div class="mt-16">
-        <div v-if="blog_filtered.length === 0" class="text-center w-full">
-            <p class="text-xl font-medium">Blog not found.</p>
-        </div>
-        <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <NuxtLink v-for="blog in blog_filtered" :key="blog.id" :to="`/detail/${blog.slug}`" class="space-y-2">
-                <div class="relative w-full">
-                    <img :src="blog.image" :alt="blog.title" loading="lazy" class="w-full h-[14rem] object-cover">
-                    <div v-if="authStore.isAuth" class="absolute top-0 right-0 bg-black bg-opacity-25 ">
-                        <div class="flex items-center text-white">
-                            <button @click.prevent="handleModal(blog.id)" class="py-2 px-4">Delete</button>
-                            <NuxtLink :to="`/write/${blog.slug}`" class="py-2 pr-4">Edit</NuxtLink>
+        <p v-if="loadBlog" class="text-xl text-center font-medium">Loading...</p>
+        <div v-else>
+            <div v-if="blog_filtered.length === 0" class="text-center w-full">
+                <p class="text-xl font-medium">Blog not found.</p>
+            </div>
+            <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <NuxtLink v-for="blog in blog_filtered" :key="blog.id" :to="`/detail/${blog.slug}`" class="space-y-2">
+                    <div class="relative w-full">
+                        <img :src="blog.image" :alt="blog.title" loading="lazy" class="w-full h-[14rem] object-cover">
+                        <div v-if="authStore.isAuth" class="absolute top-0 right-0 bg-black bg-opacity-25 ">
+                            <div class="flex items-center text-white">
+                                <button @click.prevent="handleModal(blog.id)" class="py-2 px-4">Delete</button>
+                                <NuxtLink :to="`/write/${blog.slug}`" class="py-2 pr-4">Edit</NuxtLink>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <button class="category">{{ blog.category }}</button>
-                <h2 class="font-bold text-xl leading-tight">{{ blog.title }}</h2>
-                <p class="line-clamp-2 text-gray-600">{{ blog.description }}</p>
-                <BlogFooter :blog="blog" />
-            </NuxtLink>
+                    <button class="category">{{ blog.category }}</button>
+                    <h2 class="font-bold text-xl leading-tight">{{ blog.title }}</h2>
+                    <p class="line-clamp-2 text-gray-600">{{ blog.description }}</p>
+                    <BlogFooter :blog="blog" />
+                </NuxtLink>
+            </div>
         </div>
     </div>
     <BlogModal v-if="openModal" @cancel-delete="closeModal" @delete-blog="deleteBlog" />
@@ -59,8 +62,10 @@ const category = ref<string>('')
 const blogs = computed(() => blogStore.blogs)
 const blog_filtered = computed(() => category.value !== '' ? blogs.value.filter(item => item.category === category.value) : blogs.value)
 
-onMounted(() => {
-    blogStore.initilizeBlog()
+const loadBlog = ref<boolean>(true)
+onMounted(async () => {
+    await blogStore.initilizeBlog()
+    loadBlog.value = false
 })
 
 </script>
